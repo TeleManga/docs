@@ -8,7 +8,7 @@ on:
 
 jobs:
   call-deploy:
-    uses: TeleManga/devops/deployments/docs/deploy-docs.yml@main
+    uses: TeleManga/devops/.github/workflows/deploy-docs.yml@main
     with:
       python-version: '3.x'
       requirements-file: 'requirements.txt'
