@@ -1,0 +1,16 @@
+[project]
+site_name = "Документация TeleManga"
+url = "https://telemanga.github.io/docs/"
+
+[project.theme]
+variant = "modern"
+
+[project.repository]
+url = "https://github.com/telemanga/docs"
+edit = "edit/main/docs/"
+
+[project.navigation]
+items = [
+  { title = "Главная", page = "index.md" },
+  { title = "Changelog", page = "changelog.md" }
+]
