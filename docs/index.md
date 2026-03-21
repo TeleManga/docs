@@ -2,4 +2,4 @@
 
 ## Содержание
 
-3. [Условия эксплуатации](./technical_description.md)
+3. [Техническое описание](./technical_description.md)
