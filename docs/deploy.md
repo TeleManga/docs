@@ -27,7 +27,7 @@ main (production)
 |-------|-----------|---------------|
 | `main` | Стабильный production-код | -- |
 | `develop` | Интеграционная ветка для staging | `main` (через release-ветку) |
-| `feature/*` | Разработка новой функциональности | `develop` |
+| `feat/*` | Разработка новой функциональности | `develop` |
 | `hotfix/*` | Срочные исправления production | `main` + `develop` |
 | `release/*` | Подготовка релиза (фиксация версии, финальные правки) | `main` + `develop` |
 
@@ -91,7 +91,7 @@ Merge в main (через release-ветку или hotfix)
     │      • Выполнение миграций БД: dotnet ef database update
     │      • Health check: ожидание ответа 200 от GET /health
     │
-    └── 5. Создание Git Tag + GitHub/GitLab Release
+    └── 5. Создание Git Tag + GitHub Release
            • Тег: v<semver>
            • Release notes из CHANGELOG или коммитов
 ```
