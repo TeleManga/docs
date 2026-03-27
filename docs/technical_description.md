@@ -293,16 +293,18 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 ### 3.5. Архитектура Backend
 
-Backend реализуется на ASP.NET Core по принципу **Clean Architecture** (слоистая архитектура):
+Backend реализуется как **модульный монолит** по принципам **Clean Architecture**.
+
+#### 3.5.1 Слои **Clean Architecture**:
 
 ![Clean Architecture](assets/diagrams/clean-architecture/clean-architecture.svg)
 
 | Слой | Ответственность |
 |------|-----------------|
 | **Presentation** | HTTP-контроллеры, маршрутизация, middleware аутентификации и авторизации, валидация входных данных |
-| **Application** | Бизнес-логика (use cases / сервисы), DTO-объекты для передачи данных, интерфейсы репозиториев |
-| **Domain** | Доменные сущности (Manga, Chapter, User и т.д.), перечисления (enums), бизнес-правила |
-| **Infrastructure** | Реализация репозиториев через EF Core, работа с PostgreSQL, клиент хранилища файлов, реализация JWT-сервиса |
+| **Application** | Сценарии использования (use cases), координация логики (Application Services), DTO-объекты, маппинг данных |
+| **Domain** | Доменные сущности, интерфейсы сервисов |
+| **Infrastructure** | Реализация контрактов (EF Core: DbContext/Migrations), работа с PostgreSQL, хранилище файлов (S3 Client), реализация JWT-сервиса |
 
 ### 3.6. Архитектура Frontend
 
