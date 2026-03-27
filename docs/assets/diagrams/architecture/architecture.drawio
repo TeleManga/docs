@@ -1,60 +1,57 @@
-<mxfile host="app.diagrams.net" agent="Cursor" version="29.6.1">
-  <diagram id="arch-diagram" name="Architecture">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="900" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        <!-- Telegram Client -->
-        <mxCell id="tg-client" value="Telegram Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1;fontSize=14;arcSize=8;container=1;" vertex="1" parent="1">
-          <mxGeometry x="30" y="20" width="440" height="280" as="geometry" />
-        </mxCell>
-        <mxCell id="tg-miniapp" value="Telegram Mini App (WebView / iframe)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;fontStyle=1;fontSize=12;arcSize=8;container=1;" vertex="1" parent="tg-client">
-          <mxGeometry x="30" y="40" width="380" height="220" as="geometry" />
-        </mxCell>
-        <mxCell id="frontend-tg" value="Frontend (React SPA)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontStyle=1;fontSize=12;arcSize=10;container=1;" vertex="1" parent="tg-miniapp">
-          <mxGeometry x="20" y="50" width="340" height="150" as="geometry" />
-        </mxCell>
-        <mxCell id="fe-tg-items" value="• Каталог, ридер, библиотека, профиль&#xa;• Telegram Web App SDK&#xa;• HTTP-запросы к Backend API" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;spacingLeft=10;spacingTop=10;" vertex="1" parent="frontend-tg">
-          <mxGeometry x="10" y="30" width="320" height="110" as="geometry" />
-        </mxCell>
-        <!-- Browser -->
-        <mxCell id="browser" value="Браузер" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#66bb6a;verticalAlign=top;fontStyle=1;fontSize=14;arcSize=8;container=1;" vertex="1" parent="1">
-          <mxGeometry x="500" y="20" width="440" height="280" as="geometry" />
-        </mxCell>
-        <mxCell id="frontend-browser" value="Frontend (React SPA) — Standalone" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontStyle=1;fontSize=12;arcSize=10;container=1;" vertex="1" parent="browser">
-          <mxGeometry x="30" y="40" width="380" height="220" as="geometry" />
-        </mxCell>
-        <mxCell id="fe-br-items" value="• Каталог, ридер, библиотека, профиль&#xa;• HTTP-запросы к Backend API&#xa;&#xa;Единая кодовая база с Telegram-версией;&#xa;SDK подключается условно" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;spacingLeft=10;spacingTop=10;fontColor=#555555;" vertex="1" parent="frontend-browser">
-          <mxGeometry x="10" y="30" width="360" height="170" as="geometry" />
-        </mxCell>
-        <!-- Arrows to Backend -->
-        <mxCell id="arrow-tg" value="HTTPS (REST API)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#333333;fontSize=11;fontStyle=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="tg-client" target="backend">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow-br" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#333333;" edge="1" parent="1" source="browser" target="backend">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <!-- Backend -->
-        <mxCell id="backend" value="Backend (.NET Web API)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontStyle=1;fontSize=12;arcSize=10;container=1;" vertex="1" parent="1">
-          <mxGeometry x="270" y="380" width="460" height="170" as="geometry" />
-        </mxCell>
-        <mxCell id="be-items" value="• Аутентификация (JWT)&#xa;• Бизнес-логика&#xa;• Авторизация по ролям&#xa;• Проксирование изображений" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;spacingLeft=10;spacingTop=5;" vertex="1" parent="backend">
-          <mxGeometry x="20" y="30" width="420" height="130" as="geometry" />
-        </mxCell>
-        <!-- Storage -->
-        <mxCell id="arrow-pg" edge="1" parent="1" source="backend" target="postgres" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#333333;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow-s3" edge="1" parent="1" source="backend" target="s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#333333;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="postgres" value="PostgreSQL&#xa;(данные)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="300" y="620" width="160" height="100" as="geometry" />
-        </mxCell>
-        <mxCell id="s3" value="Object Storage&#xa;(изображения)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="540" y="620" width="160" height="100" as="geometry" />
-        </mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
+<mxfile host="65bd71144e">
+    <diagram id="arch-diagram" name="Architecture">
+        <mxGraphModel dx="546" dy="1403" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="browser" value="Client Application" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;fontStyle=1;fontSize=14;arcSize=8;container=1;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="120" width="440" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="frontend-browser" value="Frontend (React SPA)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontStyle=1;fontSize=12;arcSize=10;container=1;" parent="browser" vertex="1">
+                    <mxGeometry x="30" y="28.57" width="380" height="151.43" as="geometry"/>
+                </mxCell>
+                <mxCell id="fe-br-items" value="&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;• Каталог, ридер, библиотека, профиль&lt;br&gt;• HTTPS-запросы к Backend API&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(85, 85, 85);&quot;&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;• Environmtent Handling: автоматическое определение среды&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp; (Браузер/Telegram Mini App)&lt;/font&gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(85, 85, 85);&quot;&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;• Контекстная загрузка Telegram Web Apps SDK&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;spacingLeft=10;spacingTop=10;fontColor=#555555;" parent="frontend-browser" vertex="1">
+                    <mxGeometry x="10" y="20.649545454545457" width="340" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow-br" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#333333;" parent="1" source="browser" target="backend" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="&lt;b&gt;HTTPS&lt;/b&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="arrow-br" vertex="1" connectable="0">
+                    <mxGeometry x="-0.2778" y="-1" relative="1" as="geometry">
+                        <mxPoint x="-29" y="8" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="backend" value="Backend (.NET Web API)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontStyle=1;fontSize=12;arcSize=10;container=1;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="380" width="440" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="be-items" value="• Аутентификация (JWT)&#xa;• Бизнес-логика&#xa;• Авторизация по ролям&#xa;• Проксирование изображений" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;spacingLeft=10;spacingTop=5;" parent="backend" vertex="1">
+                    <mxGeometry x="19.130434782608695" y="30" width="420" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow-pg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#333333;" parent="1" source="backend" target="postgres" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow-s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#333333;" parent="1" source="backend" target="s3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="postgres" value="PostgreSQL&#xa;(данные)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="620" width="160" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="s3" value="Object Storage&lt;br&gt;(файлы)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="540" y="620" width="160" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" style="edgeStyle=none;html=1;" edge="1" parent="1" source="4" target="browser">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="Telegram Mini App" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1;fontSize=14;arcSize=8;container=1;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="-120" width="440" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="Host" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontStyle=1;fontSize=12;arcSize=10;container=1;" vertex="1" parent="4">
+                    <mxGeometry x="30" y="28.57" width="380" height="151.43" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;• Передача параметров пользователя&lt;br&gt;• Управление системными кнопками и темой&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(85, 85, 85);&quot;&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;• Доступ к нативным API&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;spacingLeft=10;spacingTop=10;fontColor=#555555;" vertex="1" parent="5">
+                    <mxGeometry x="10" y="20.649545454545457" width="260" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
 </mxfile>
