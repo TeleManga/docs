@@ -52,7 +52,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | status | enum | NOT NULL | Статус публикации (ongoing, announced, completed, dropped, paused) |
 | release_date | timestamptz | NOT NULL | Дата выхода |
 | views_count | int | NOT NULL, DEFAULT 0 | Количество просмотров |
-| average_rating | decimal | NOT NULL, DEFAULT 0 | Средний рейтинг. Пересчитывается на уровне приложения (Application-слой) при каждом добавлении, изменении или удалении оценки (Rating) |
+| average_rating | int | NOT NULL, DEFAULT 0 | Средний рейтинг. Пересчитывается на уровне приложения (Application-слой) при каждом добавлении, изменении или удалении оценки (Rating) |
 | created_at | timestamptz | NOT NULL | Дата создания записи |
 | updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
