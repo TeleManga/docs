@@ -14,7 +14,7 @@
 
 Оба режима используют один и тот же Backend API. Архитектура решения:
 
-![Архитектура решения](assets/diagrams/architecture/architecture.svg)
+![Архитектура решения](assets/diagrams/service-diagram/service-diagram.svg)
 
 ### 3.2. Стек технологий
 
