@@ -40,50 +40,49 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 #### 3.3.1. Сущности
 
-**Manga** -- основная сущность, описывающая тайтл.
+1. **Comics** $-$ основная сущность, описывающая комикс.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
+| id | int | PK | Идентификатор |
 | title | varchar | NOT NULL | Название |
 | description | text | NOT NULL | Описание |
 | cover_image_url | varchar | NOT NULL | URL обложки |
 | author | varchar | NOT NULL | Автор |
 | status | enum | NOT NULL | Статус публикации (ongoing, announced, completed, dropped, paused) |
+| kind | enum | NOT NULL | Тип (manga, manhwa, manhua) |
 | release_date | timestamptz | NOT NULL | Дата выхода |
-| views_count | int | NOT NULL, DEFAULT 0 | Количество просмотров |
 | average_rating | int | NOT NULL, DEFAULT 0 | Средний рейтинг. Пересчитывается на уровне приложения (Application-слой) при каждом добавлении, изменении или удалении оценки (Rating) |
 | created_at | timestamptz | NOT NULL | Дата создания записи |
 | updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-**Chapter** -- глава манги.
+2. **Chapter** $-$ глава комикса.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
-| manga_id | UUID | FK → Manga.id, NOT NULL | Привязка к манге |
-| number | decimal | NOT NULL | Номер главы |
-| title | varchar | NULLABLE | Название главы |
-| volume | int | NULLABLE | Номер тома |
+| id | int | PK | Идентификатор |
+| comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Привязка к комиксу |
+| title | varchar | NOT NULL | Название главы |
+| chapter_nomer | int | NOT NULL | Номер главы |
+| volume_nomer | int | NULLABLE | Номер тома |
 | pages_count | int | NOT NULL | Количество страниц |
-| views_count | int | NOT NULL, DEFAULT 0 | Количество просмотров |
 | created_at | timestamptz | NOT NULL | Дата создания |
 | updated_at | timestamptz | NOT NULL | Дата обновления |
 
-**Page** -- страница главы.
+3. **Page** $-$ страница главы.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
-| chapter_id | UUID | FK → Chapter.id, NOT NULL | Привязка к главе |
-| page_number | int | NOT NULL | Номер страницы |
+| id | int | PK | Идентификатор |
+| chapter_id | int | FK $\rightarrow$ Chapter.id, NOT NULL | Привязка к главе |
+| page_nomer | int | NOT NULL | Номер страницы |
 | image_url | varchar | NOT NULL | URL изображения |
 
-**User** -- пользователь системы.
+4. **User** $-$ пользователь системы.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
+| id | int | PK | Идентификатор |
 | username | varchar | UNIQUE, NOT NULL | Имя пользователя |
 | email | varchar | UNIQUE, NOT NULL | Электронная почта |
 | password_hash | varchar | NOT NULL | Хеш пароля |
@@ -92,97 +91,86 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | created_at | timestamptz | NOT NULL | Дата регистрации |
 | updated_at | timestamptz | NOT NULL | Дата обновления |
 
-**Rating** -- оценка манги пользователем.
+5. **Rating** $-$ оценка комикса пользователем.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
-| user_id | UUID | FK → User.id, NOT NULL | Кто поставил |
-| manga_id | UUID | FK → Manga.id, NOT NULL | Какой манге |
-| rating | int | NOT NULL, CHECK (1..10) | Оценка от 1 до 10 |
+| id | int | PK | Идентификатор |
+| user_id | int | FK $\rightarrow$ User.id, NOT NULL | Кто поставил |
+| comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Какому комиксу |
+| rating | int | NOT NULL, CHECK (1..5) | Оценка от 1 до 5 |
 | created_at | timestamptz | NOT NULL | Дата оценки |
 
-Уникальное ограничение: `(user_id, manga_id)` -- один пользователь может оценить мангу только один раз.
+Уникальное ограничение: `(user_id, comics_id)` $-$ один пользователь может оценить коимкс только один раз.
 
-**Comment** -- комментарий к манге.
+6. **Comment** $-$ комментарий к комиксу.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
-| user_id | UUID | FK → User.id, NOT NULL | Автор комментария |
-| manga_id | UUID | FK → Manga.id, NOT NULL | К какой манге |
+| id | int | PK | Идентификатор |
+| user_id | int | FK $\rightarrow$ User.id, NOT NULL | Автор комментария |
+| comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | К какому комиску |
 | content | text | NOT NULL | Текст комментария |
 | created_at | timestamptz | NOT NULL | Дата создания |
 | updated_at | timestamptz | NOT NULL | Дата обновления |
 
-**ReadingHistory** -- прогресс чтения.
+7. **Reading_History** $-$ история чтения.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
-| user_id | UUID | FK → User.id, NOT NULL | Пользователь |
-| manga_id | UUID | FK → Manga.id, NOT NULL | Манга |
-| chapter_id | UUID | FK → Chapter.id, NOT NULL | Последняя глава |
-| last_page_number | int | NOT NULL | Последняя прочитанная страница |
+| id | int | PK | Идентификатор |
+| user_id | int | FK $\rightarrow$ User.id, NOT NULL | Пользователь |
+| comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Последний комикс |
+| chapter_id | int | FK $\rightarrow$ Chapter.id, NOT NULL | Последняя глава |
+| page_id | int | FK $\rightarrow$ Page.id | Последняя страница |
 
-Уникальное ограничение: `(user_id, manga_id)` -- одна запись прогресса на пару пользователь-манга.
+Уникальное ограничение: `(user_id, comics_id)` $-$ одна запись прогресса на пару пользователь-комикс.
 
-**UserLibrary** -- библиотека пользователя.
+8. **User_Library** $-$ библиотека пользователя.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
-| user_id | UUID | FK → User.id, NOT NULL | Пользователь |
-| manga_id | UUID | FK → Manga.id, NOT NULL | Манга |
+| id | int | PK | Идентификатор |
+| user_id | int | FK $\rightarrow$ User.id, NOT NULL | Пользователь |
+| comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Комикс |
 | status | enum | NOT NULL | Статус (reading, completed, plan_to_read, dropped, favorite) |
 | added_at | timestamptz | NOT NULL | Дата добавления |
 
-Уникальное ограничение: `(user_id, manga_id)`.
+Уникальное ограничение: `(user_id, comics_id)`.
 
-**Genre** -- жанр.
+9. **Genre** $-$ жанр.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
+| id | int | PK | Идентификатор |
+| comics_id | int | FK $\rightarrow$ Comics.id | Комикс |
 | name | varchar | UNIQUE, NOT NULL | Название жанра |
-| description | text | NULLABLE | Описание жанра |
+| description | text | NOT NULL | Описание жанра |
 
-**Tag** -- тег.
+10.  **Tag** $-$ тег.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
-| id | UUID | PK | Идентификатор |
+| id | int | PK | Идентификатор |
+| comics_id | int | FK $\rightarrow$ Comics.id | Комикс |
 | name | varchar | UNIQUE, NOT NULL | Название тега |
-
-**manga_genre** -- связь манги и жанров (many-to-many).
-
-| Поле | Тип | Ограничения |
-|------|-----|-------------|
-| manga_id | UUID | PK, FK → Manga.id |
-| genre_id | UUID | PK, FK → Genre.id |
-
-**manga_tags** -- связь манги и тегов (many-to-many).
-
-| Поле | Тип | Ограничения |
-|------|-----|-------------|
-| manga_id | UUID | PK, FK → Manga.id |
-| tag_id | UUID | PK, FK → Tag.id |
+| description | text | NOT NULL | Описание тега |
 
 #### 3.3.2. Связи между сущностями
 
 | Связь | Тип | Описание |
 |-------|-----|----------|
-| Manga → Chapter | 1 : N | У манги может быть много глав |
-| Chapter → Page | 1 : N | У главы может быть много страниц |
-| Manga ↔ Genre | M : N | Манга может иметь несколько жанров, жанр привязан к нескольким мангам (через manga_genre) |
-| Manga ↔ Tag | M : N | Манга может иметь несколько тегов, тег привязан к нескольким мангам (через manga_tags) |
-| User → Rating | 1 : N | Пользователь может поставить много оценок (по одной на мангу) |
-| Manga → Rating | 1 : N | У манги может быть много оценок |
-| User → Comment | 1 : N | Пользователь может оставить много комментариев |
-| Manga → Comment | 1 : N | У манги может быть много комментариев |
-| User → ReadingHistory | 1 : N | Пользователь имеет историю чтения для каждой манги |
-| User → UserLibrary | 1 : N | Пользователь может добавить в библиотеку много манг |
-| Manga → UserLibrary | 1 : N | Манга может быть в библиотеках многих пользователей |
+| Comics $\rightarrow$ Chapter | 1 : N | У комикса может быть много глав |
+| Chapter $\rightarrow$ Page | 1 : N | У главы может быть много страниц |
+| Comics $\rightarrow$ Genre | 1 : N | Комикс может иметь несколько жанров, но как минимум 1 |
+| Comics $\rightarrow$ Tag | 1 : N | Комикс может иметь несколько тегов, но как минимум 1 |
+| User $\rightarrow$ Rating | 1 : N | Пользователь может поставить много оценок (по одной на комикс) |
+| Comics $\rightarrow$ Rating | 1 : N | У комикса может быть много оценок |
+| User $\rightarrow$ Comment | 1 : N | Пользователь может оставить много комментариев |
+| Comics $\rightarrow$ Comment | 1 : N | У комикса может быть много комментариев |
+| User $\rightarrow$ Reading_History | 1 : N | Пользователь имеет историю чтения для каждого комикса |
+| User $\rightarrow$ User_Library | 1 : N | Пользователь может добавить в библиотеку много комиксов |
+| Comics $\rightarrow$ UserLibrary | 1 : N | Комикс может быть в библиотеках многих пользователей |
 
 ### 3.4. API: группы эндпоинтов
 
@@ -289,7 +277,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| GET | `/health` | Health check -- проверка работоспособности сервиса (статус БД, подключение к S3). | Без аутентификации |
+| GET | `/health` | Health check $-$ проверка работоспособности сервиса (статус БД, подключение к S3). | Без аутентификации |
 
 ### 3.5. Архитектура Backend
 
