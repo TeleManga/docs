@@ -45,38 +45,53 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | id | int | PK | Идентификатор |
 | title | varchar | NOT NULL | Название |
 | description | text | NOT NULL | Описание |
-| cover_image_url | varchar | NOT NULL | URL обложки |
+| image_url | varchar | NOT NULL | URL обложки |
 | author | varchar | NOT NULL | Автор |
+| volumes_count | int | NOT NULL | Количество томов |
 | status | enum | NOT NULL | Статус публикации (ongoing, announced, completed, dropped, paused) |
 | kind | enum | NOT NULL | Тип (manga, manhwa, manhua) |
 | release_date | timestamptz | NOT NULL | Дата выхода |
-| average_rating | int | NOT NULL, DEFAULT 0 | Средний рейтинг. Пересчитывается на уровне приложения (Application-слой) при каждом добавлении, изменении или удалении оценки (Rating) |
+| average_rating | numeric(3,2) | NOT NULL, DEFAULT 0.00 | Средний рейтинг (0.00 - 5.00, гарантируется 2 цифры после точки и три цифры в общем). Пересчитывается на уровне приложения (Application-слой) при каждом добавлении, изменении или удалении оценки (Rating) |
+| comments_count | int | NOT NULL, DEFAULT 0 | Количество комментариев |
 | created_at | timestamptz | NOT NULL | Дата создания записи |
 | updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-2. **Chapter** $-$ глава комикса.
+2. **Volume** $-$ том комикса.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Привязка к комиксу |
+| title | varchar | NOT NULL | Название тома |
+| volume_nomer | int | NOT NULL | Номер тома |
+| chapters_count | int | NOT NULL | Количество глав в томе |
+| created_at | timestamptz | NOT NULL | Дата создания записи |
+| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
+
+3. **Chapter** $-$ глава тома.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| id | int | PK | Идентификатор |
+| volume_id | int | FK $\rightarrow$ Volume.id, NOT NULL | Привязка к тому |
 | title | varchar | NOT NULL | Название главы |
 | chapter_nomer | int | NOT NULL | Номер главы |
-| volume_nomer | int | NULLABLE | Номер тома |
-| pages_count | int | NOT NULL | Количество страниц |
-| created_at | timestamptz | NOT NULL | Дата создания |
-| updated_at | timestamptz | NOT NULL | Дата обновления |
+| pages_count | int | NOT NULL | Количество страниц в главе |
+| created_at | timestamptz | NOT NULL | Дата создания записи |
+| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-3. **Page** $-$ страница главы.
+4. **Page** $-$ страница главы.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | chapter_id | int | FK $\rightarrow$ Chapter.id, NOT NULL | Привязка к главе |
 | page_nomer | int | NOT NULL | Номер страницы |
-| image_url | varchar | NOT NULL | URL изображения |
+| image_url | varchar | NOT NULL | URL на контент страницы |
+| created_at | timestamptz | NOT NULL | Дата создания записи |
+| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-4. **User** $-$ пользователь системы.
+5. **User** $-$ пользователь системы.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -89,7 +104,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | created_at | timestamptz | NOT NULL | Дата регистрации |
 | updated_at | timestamptz | NOT NULL | Дата обновления |
 
-5. **Rating** $-$ оценка комикса пользователем.
+6. **ComicsRating** $-$ оценка комикса пользователем.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -97,22 +112,34 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | user_id | int | FK $\rightarrow$ User.id, NOT NULL | Кто поставил |
 | comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Какому комиксу |
 | rating | int | NOT NULL, CHECK (1..5) | Оценка от 1 до 5 |
-| created_at | timestamptz | NOT NULL | Дата оценки |
 
 Уникальное ограничение: `(user_id, comics_id)` $-$ один пользователь может оценить коимкс только один раз.
 
-6. **Comment** $-$ комментарий к комиксу.
+7. **Comment** $-$ комментарий к комиксу.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | user_id | int | FK $\rightarrow$ User.id, NOT NULL | Автор комментария |
 | comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | К какому комиску |
+| like_count | int | NOT NULL, DEFAULT 0 | Суммарное количество лайков |
+| dislike_count | int | NOT NULL, DEFAULT 0 | Суммарное количество дизлайков |
 | content | text | NOT NULL | Текст комментария |
-| created_at | timestamptz | NOT NULL | Дата создания |
-| updated_at | timestamptz | NOT NULL | Дата обновления |
+| created_at | timestamptz | NOT NULL | Дата создания записи |
+| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-7. **Reading_History** $-$ история чтения.
+8. **CommentVoting** $-$ оценка комментария пользователем.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| id | int | PK | Идентификатор |
+| user_id | int | FK $\rightarrow$ User.id, NOT NULL | Кто оценил |
+| comment_id | int | FK $\rightarrow$ Comment.id, NOT NULL | Какой комментарий |
+| voting | enum (like, dislike) | NOT NULL | Комментарий оценивается лайком/дизлайком |
+
+Уникальное ограничение: `(user_id, comment_id)` $-$ один пользователь может оценить комментарий только один раз.
+
+9. **ReadingHistory** $-$ история чтения.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -121,69 +148,91 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Последний комикс |
 | chapter_id | int | FK $\rightarrow$ Chapter.id, NOT NULL | Последняя глава |
 | page_id | int | FK $\rightarrow$ Page.id | Последняя страница |
+| created_at | timestamptz | NOT NULL | Дата создания записи |
+| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
 Уникальное ограничение: `(user_id, comics_id)` $-$ одна запись прогресса на пару пользователь-комикс.
 
-8. **User_Library** $-$ библиотека пользователя.
+10. **Library** $-$ библиотека пользователя.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | user_id | int | FK $\rightarrow$ User.id, NOT NULL | Пользователь |
-| comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Комикс |
-| status | enum | NOT NULL | Статус (reading, completed, plan_to_read, dropped, favorite) |
-| added_at | timestamptz | NOT NULL | Дата добавления |
+| title | varchar | NOT NULL, UNIQUE | Пользовательское название своей библиотеки |
+| comics_count | int | NOT NULL | Количество добавленных комиксов |
+| created_at | timestamptz | NOT NULL | Дата создания записи |
+| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-Уникальное ограничение: `(user_id, comics_id)`.
-
-9. **Genre** $-$ жанр.
+1.   **Genre** $-$ жанр.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | name | varchar | UNIQUE, NOT NULL | Название жанра |
 | description | text | NOT NULL | Описание жанра |
+| created_at | timestamptz | NOT NULL | Дата создания записи |
+| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-10.  **Tag** $-$ тег.
+12.  **Tag** $-$ тег.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | name | varchar | UNIQUE, NOT NULL | Название тега |
 | description | text | NOT NULL | Описание тега |
+| created_at | timestamptz | NOT NULL | Дата создания записи |
+| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-11.  **Comics_Genre** $-$ связующая таблица Comics и Genre как 1 ко многим.
+13. **LibraryComics** $-$ связующая таблица Library и Comics как многие ко многим.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
-| comics_id | int | FK | Комикс |
-| genre_id | int | FK | Жанр |
+| library_id | int | FK $\rightarrow$ Library.id | Бибилотека |
+| comics_id | int | FK $\rightarrow$ Comics.id | Комикс |
+| status | enum | NOT NULL | Статус (reading, completed, plan_to_read, dropped, favorite) |
+| created_at | timestamptz | NOT NULL | Дата создания записи |
+| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-12. **Comics_Tag** $-$ связующая таблица Comics и Tag как 1 ко многим.
+14. **ComicsGenre** $-$ связующая таблица Comics и Genre как многие ко многим.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| id | int | PK | Идентификатор |
+| comics_id | int | FK $\rightarrow$ Comics.id | Комикс |
+| genre_id | int | FK $\rightarrow$ Genre.id | Жанр |
+
+15. **ComicsTag** $-$ связующая таблица Comics и Tag как многие ко многим.
     
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
-| comics_id | int | FK | Комикс |
-| tag_id | int | FK | Тег |
+| comics_id | int | FK $\rightarrow$ Comics.id | Комикс |
+| tag_id | int | FK $\rightarrow$ Tag.id | Тег |
 
 
 #### 3.3.2. Связи между сущностями
 
 | Связь | Тип | Описание |
 |-------|-----|----------|
-| Comics $\rightarrow$ Chapter | 1 : N | У комикса может быть много глав |
-| Chapter $\rightarrow$ Page | 1 : N | У главы может быть много страниц |
+| Comics $\rightarrow$ Volume | 1 : N | У комикса может быть много томов |
+| Comics $\rightarrow$ Rating | 1 : N | У комикса может быть много оценок |
+| Comics $\rightarrow$ Comment | 1 : N | У комикса может быть много комментариев |
 | Comics $\leftrightarrow$ Genre | M : N | Комиксы могут иметь несколько жанров, но как минимум 1 |
 | Comics $\leftrightarrow$ Tag | M : N | Комиксы могут иметь несколько тегов, но как минимум 1 |
-| User $\rightarrow$ Rating | 1 : N | Пользователь может поставить много оценок (по одной на комикс) |
-| Comics $\rightarrow$ Rating | 1 : N | У комикса может быть много оценок |
-| User $\rightarrow$ Comment | 1 : N | Пользователь может оставить много комментариев |
-| Comics $\rightarrow$ Comment | 1 : N | У комикса может быть много комментариев |
-| User $\rightarrow$ Reading_History | 1 : N | Пользователь имеет историю чтения для каждого комикса |
-| User $\rightarrow$ User_Library | 1 : N | Пользователь может добавить в библиотеку много комиксов |
 | Comics $\rightarrow$ UserLibrary | 1 : N | Комикс может быть в библиотеках многих пользователей |
+| Volume $\rightarrow$ Chapter | 1 : N | У тома может быть много глав |
+| Chapter $\rightarrow$ Page | 1 : N | У главы может быть много страниц |
+| User $\rightarrow$ ReadingHistory | 1 : N | Пользователь может читать несколько комиксов одновременно |
+| Volume $\rightarrow$ ReadingHistory | 1 : 1 | Том сохраняется в истории пользователя для конкретного комикса (только последний просмотренный том) |
+| Chapter $\rightarrow$ ReadingHistory | 1 : 1 | Глава сохраняется в истории пользователя для конкретного комикса (только последняя просмотренная глава) |
+| Page $\rightarrow$ ReadingHistory | 1 : 1 | Страница сохраняется в истории пользователя для конкретного комикса и его конкретной главы (только последняя просмотренная страница) |
+| User $\rightarrow$ ComicsRating | 1 : N | Пользователь может поставить много оценок (по одной на комикс) |
+| User $\rightarrow$ CommentVoting | 1 : N | Пользователь может оценить много комментариев (но только один раз каждый) |
+| User $\rightarrow$ Comment | 1 : N | Пользователь может оставить много комментариев (несколько комментариев на один комикс в том числе) |
+| User $\rightarrow$ Library | 1 : N | У пользователя может быть несколько библиотек |
+| Library $\rightarrow$ Comics | M : N | Бибилотеки могут иметь несколько комиксов |
 
 ### 3.4. API: группы эндпоинтов
 
@@ -192,101 +241,170 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | Метод | Путь | Описание |
 |-------|------|----------|
 | POST | `/api/auth/register` | Регистрация нового пользователя (username, email, password), возвращает JWT |
-| POST | `/api/auth/login` | Авторизация по username + password, возвращает JWT |
-| POST | `/api/auth/refresh` | Обновление JWT-токена |
+| POST | `/api/auth/login` | Авторизация по username + password, возвращает JWT | 
 
-#### 3.4.2. Манга
+#### 3.4.2. Комиксы
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| GET | `/api/manga` | Список манги с пагинацией, фильтрами, сортировкой и поиском (см. ниже) | Все |
-| GET | `/api/manga/{id}` | Детальная информация о манге | Все |
-| POST | `/api/manga` | Создание манги | admin |
-| PUT | `/api/manga/{id}` | Обновление манги | admin |
-| DELETE | `/api/manga/{id}` | Удаление манги | admin |
+| GET | `/api/comics` | Список комиксов с фильтрами, сортировкой и поиском | Все |
+| GET | `/api/comics/{id}` | Детальная информация о комиксе | Все |
+| POST | `/api/comics` | Создание комикса | admin |
+| PUT | `/api/comics/{id}` | Обновление комикса (метаданные) | admin |
+| DELETE | `/api/comics/{id}` | Удаление комикса | admin |
 
-**Query-параметры `GET /api/manga`:**
+**Query-параметры `GET /api/comics`:**
 
 | Параметр | Тип | Описание |
 |----------|-----|----------|
-| `search` | string | Поиск по названию манги (полнотекстовый поиск через PostgreSQL `tsvector`) |
-| `genres` | string | Фильтр по жанрам (список UUID через запятую) |
-| `tags` | string | Фильтр по тегам (список UUID через запятую) |
-| `status` | string | Фильтр по статусу манги (ongoing, completed и т.д.) |
-| `sortBy` | string | Поле сортировки: `popularity`, `rating`, `created_at`, `title` (по умолчанию `popularity`) |
+| `title` | string | Поиск по названию комикса |
+| `author` | string | Поиск по автору комикса |
+| `status` | string | Фильтр по статусу комикса (ongoing, completed и т.д.) |
+| `kind` | string | Фильтр по типу комикса (manga, manhwa, manhua) |
+| `release_date` | string | Фильтр по дате выпуска |
+| `average_rating` | float | Фильтр по рейтингу комикса |
+| `genres` | string | Фильтр по жанрам |
+| `tags` | string | Фильтр по тегам |
+| `sortBy` | string | Поле сортировки (по умолчанию `average_rating`) |
 | `sortOrder` | string | Направление сортировки: `asc`, `desc` (по умолчанию `desc`) |
-| `page` | int | Номер страницы (по умолчанию 1) |
-| `pageSize` | int | Размер страницы (по умолчанию 20, максимум 50) |
+| `limit` | int | Лимит найденных комиксов |
 
-#### 3.4.3. Главы
+#### 3.4.3. Тома
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| GET | `/api/manga/{mangaId}/chapters` | Список глав манги | Все |
+| GET | `/api/comics/{comicsId}/volumes` | Список томов комикса с фильтрами | Все |
+| POST | `/api/comics/{comicsId}/volumes` | Добавление тома | admin |
+| GET | `api/volumes/{id}` | Информация о томе | Все |
+| PUT | `api/volumes/{id}` | Обновление тома | admin |
+| DELETE | `/api/volumes/{id}` | Удаление тома | admin |
+
+**Query-параметры `GET /api/comics/{comicsId}/volumes`:**
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `title` | string | Фильтр по названию тома |
+| `volume_nomer` | int | Фильтр по номеру тома |
+| `sortBy` | string | Поле сортировки (по умолчанию `volume_nomer`) |
+| `sortOrder` | string | Направление сортировки: `asc`, `desc` (по умолчанию `desc`) |
+| `limit` | int | Лимит найденных томов |
+
+#### 3.4.4. Главы
+
+| Метод | Путь | Описание | Доступ |
+|-------|------|----------|--------|
+| GET | `/api/volumes/{volumeId}/chapters` | Список глав тома с фильтрами | Все |
+| POST | `/api/volumes/{volumeId}/chapters` | Добавление главы | admin |
 | GET | `/api/chapters/{id}` | Информация о главе | Все |
-| POST | `/api/manga/{mangaId}/chapters` | Добавление главы | admin |
 | PUT | `/api/chapters/{id}` | Обновление главы | admin |
 | DELETE | `/api/chapters/{id}` | Удаление главы | admin |
 
-#### 3.4.4. Страницы
+**Query-параметры `GET /api/volumes/{volumeId}/chapters`:**
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `title` | string | Фильтр по названию главы |
+| `chapter_nomer` | int | Фильтр по номеру главы |
+| `limit` | int | Лимит найденных глав |
+
+#### 3.4.5. Страницы
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
 | GET | `/api/chapters/{chapterId}/pages` | Список страниц главы | Все |
-| POST | `/api/chapters/{chapterId}/pages` | Загрузка страниц | admin |
+| POST | `/api/chapters/{chapterId}/pages` | Добавление страницы | admin |
+| GET | `/api/pages/{id}` | Информация о странице | Все |
+| PUT | `/api/pages/{id}` | Обновление страницы | admin |
 | DELETE | `/api/pages/{id}` | Удаление страницы | admin |
 
-#### 3.4.5. Оценки
+#### 3.4.6. Оценки комиксов
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| POST | `/api/manga/{mangaId}/rating` | Поставить / обновить оценку | user, admin |
-| GET | `/api/manga/{mangaId}/rating` | Получить свою оценку | user, admin |
-| DELETE | `/api/manga/{mangaId}/rating` | Удалить оценку | user, admin |
+| POST | `/api/comics/{comicsId}/rating` | Поставить / обновить оценку | Все |
+| GET | `/api/comics/{comicsId}/rating` | Получить свою оценку | Все |
+| DELETE | `/api/comics/{comicsId}/rating` | Удалить оценку | Все |
 
-#### 3.4.6. Комментарии
-
-| Метод | Путь | Описание | Доступ |
-|-------|------|----------|--------|
-| GET | `/api/manga/{mangaId}/comments` | Список комментариев (пагинация) | Все |
-| POST | `/api/manga/{mangaId}/comments` | Создание комментария | user, admin |
-| PUT | `/api/comments/{id}` | Редактирование своего комментария | автор / admin |
-| DELETE | `/api/comments/{id}` | Удаление комментария | автор / admin |
-
-#### 3.4.7. Библиотека пользователя
+#### 3.4.7. Комментарии
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| GET | `/api/library` | Список манги в библиотеке (фильтр по статусу) | user, admin |
-| POST | `/api/library` | Добавить мангу в библиотеку | user, admin |
-| PUT | `/api/library/{id}` | Изменить статус | user, admin |
-| DELETE | `/api/library/{id}` | Удалить из библиотеки | user, admin |
+| GET | `/api/comics/{comicsId}/comments` | Список комментариев | Все |
+| POST | `/api/comics/{comicsId}/comments` | Создание комментария | Все |
+| DELETE | `/api/comments/{id}` | Удаление комментария | Все |
 
-#### 3.4.8. История чтения
+#### 3.4.8 Оценки комментариев
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| GET | `/api/reading-history/{mangaId}` | Получить прогресс по манге | user, admin |
-| PUT | `/api/reading-history/{mangaId}` | Обновить прогресс чтения (chapter_id, last_page_number в теле запроса) | user, admin |
+| POST | `/api/comments/{commentId}/vote` | Оценить комментарий | Все |
+| GET | `/api/comments/{commentId}/vote` | Получить оценку комментария (свою если была) | Все |
+| PUT | `/api/comments/{commentId}/vote` | Изменить оценку комментария | Все |
+| DELETE | `/api/comments/{commentId}/vote` | Удалить свою оценку комментария | Все |
 
-#### 3.4.9. Жанры и теги
+#### 3.4.9. Библиотеки пользователя
+
+| Метод | Путь | Описание | Доступ |
+|-------|------|----------|--------|
+| POST | `/api/libraries` | Создать новую библиотеку | User |
+| GET | `/api/libraries` | Список библиотек | User |
+| GET | `/api/libraries/{id}` | Получить метаданные библиотеки | User |
+| PUT | `/api/libraries/{id}` | Изменить метаданные библиотеки | User |
+| DELETE | `/api/libraries/{id}` | Удалить библиотеку | User |
+
+Каждый из этих методов подразумевает обращение к персональным
+библиотекам пользователя, id которого определяется
+через JWT.
+
+#### 3.4.10. Сохраненные комиксы в библиотеке пользователя
+
+| Метод | Путь | Описание | Доступ |
+|-------|------|----------|--------|
+| POST | `/api/libraries/{libraryId}/comics` | Добавить комикс в библиотеку | User |
+| GET | `/api/libraries/{libraryId}/comics` | Список комиксов в библиотеке с фильтрацией | User |
+| PUT | `/api/libraries/{libraryId}/comics/{id}` | Изменить статус комикса в библиотеке | User |
+| DELETE | `/api/libraries/{libraryId}/comics{id}` | Удалить комикс из библиотеки | User |
+
+**Query-параметры `GET /api/libraries/{libraryId}/comics`:**
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `status` | string | Фильтр по статусу коммикса |
+| `created_at` | int | Фильтр по дате добавления комикса в библиотеку |
+| `sortBy` | string | Поле сортировки (по умолчанию `created_at`) |
+| `sortOrder` | string | Направление сортировки: `asc`, `desc` (по умолчанию `desc`) |
+| `limit` | int | Лимит найденных комиксов |
+
+#### 3.4.11. История чтения
+
+| Метод | Путь | Описание | Доступ |
+|-------|------|----------|--------|
+| POST | `/api/reading-history/{comicsId}` | Создать прогресс чтения по комиксу | Все |
+| GET | `/api/reading-history/{comicsId}` | Получить прогресс по комиксу | Все |
+| PUT | `/api/reading-history/{comicsId}` | Обновить прогресс чтения | Все |
+
+#### 3.4.12. Жанры
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
 | GET | `/api/genres` | Список жанров | Все |
 | POST | `/api/genres` | Создание жанра | admin |
 | DELETE | `/api/genres/{id}` | Удаление жанра | admin |
+
+#### 3.4.13. Теги
+
+| Метод | Путь | Описание | Доступ |
+|-------|------|----------|--------|
 | GET | `/api/tags` | Список тегов | Все |
 | POST | `/api/tags` | Создание тега | admin |
 | DELETE | `/api/tags/{id}` | Удаление тега | admin |
 
-#### 3.4.10. Изображения
+#### 3.4.14. Изображения
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| GET | `/api/images/{*path}` | Получение изображения по относительному пути из S3-хранилища (прокси-контроллер, подробнее в п. 3.8) | Все |
 
-#### 3.4.11. Системные
+#### 3.4.15. Системные
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
@@ -331,36 +449,10 @@ Frontend реализуется как единое SPA на React с испол
 
 1. Frontend сохраняет JWT и передаёт его в заголовке `Authorization: Bearer <token>` при каждом запросе.
 2. Backend проверяет JWT и определяет роль пользователя для авторизации доступа к эндпоинтам.
-3. При истечении токена Frontend запрашивает новый через `POST /api/auth/refresh`.
 
 ### 3.8. Хранение и доставка изображений
 
-Изображения страниц манги и обложки хранятся в S3-совместимом объектном хранилище (MinIO для dev/staging, AWS S3 или аналог для production). В базе данных хранятся только относительные пути к файлам (например, `manga/{mangaId}/chapters/{chapterId}/pages/{pageNumber}.jpg`).
-
-**Загрузка (upload):**
-
-1. Администратор загружает изображение через `POST /api/chapters/{chapterId}/pages`.
-2. Backend принимает файл, генерирует путь по конвенции `manga/{mangaId}/chapters/{chapterId}/pages/{pageNumber}.{ext}`, загружает в S3-хранилище и сохраняет относительный путь в поле `image_url` таблицы Page.
-
-**Доставка (download):**
-
-Запросы к изображениям проксируются через Backend-контроллер:
-
-| Метод | Путь | Описание | Доступ |
-|-------|------|----------|--------|
-| GET | `/api/images/{*path}` | Получение изображения по относительному пути | Все |
-
-Выбрана схема с прокси-контроллером (а не прямые ссылки на MinIO) по следующим причинам:
-
-- **Контроль доступа.** Backend может проверять JWT и ограничивать доступ к контенту при необходимости.
-- **Сокрытие инфраструктуры.** Клиент не знает о внутренней топологии хранилища; URL остаётся стабильным при миграции между провайдерами (MinIO -> S3 -> другой).
-- **Единая точка входа.** Все запросы идут через один домен.
-
-**Оптимизация производительности:**
-
-- Backend при проксировании использует потоковую передачу (stream), не загружая весь файл в память.
-- Заголовки `Cache-Control` и `ETag` устанавливаются для кэширования на стороне клиента и промежуточных прокси.
-- В production рекомендуется поставить CDN (CloudFlare / AWS CloudFront) перед Backend, который будет кэшировать ответы `/api/images/*` на edge-серверах.
+Изображения страниц манги и обложки хранятся в S3-совместимом объектном хранилище (MinIO). В базе данных хранятся только url на файлы.
 
 ### 3.9. Развёртывание
 
