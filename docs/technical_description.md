@@ -47,6 +47,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | description | text | NOT NULL | Описание |
 | image_url | varchar | NOT NULL | URL обложки |
 | author | varchar | NOT NULL | Автор |
+| country | varchar | NOT NULL | Страна |
 | volumes_count | int | NOT NULL | Количество томов |
 | status | enum | NOT NULL | Статус публикации (ongoing, announced, completed, dropped, paused) |
 | kind | enum | NOT NULL | Тип (manga, manhwa, manhua) |
@@ -101,10 +102,26 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | password_hash | varchar | NOT NULL | Хеш пароля |
 | avatar_url | varchar | NULLABLE | URL аватара |
 | role | enum | NOT NULL, DEFAULT 'user' | Роль (user, admin) |
+| library_comics_count | int | NOT NULL, DEFAULT 0 | Количество комиксов добавленных в библиотеку пользователя |
+| history_comics_count | int | NOT NULL, DEFAULT 0 | Количество комиксов отслеживаемых в истории чтения пользователя |
 | created_at | timestamptz | NOT NULL | Дата регистрации |
 | updated_at | timestamptz | NOT NULL | Дата обновления |
 
-6. **ComicsRating** $-$ оценка комикса пользователем.
+6. **Session** $-$ Сессия пользователя.
+
+| Поле | Тип | Ограничения | Описание |
+|------|-----|-------------|----------|
+| id | int | PK | Идентификатор |
+| user_id | int | FK $\rightarrow$ User.id, NOT NULL | Пользователь |
+| token_hash | varchar | NOT NULL | Хеш refresh токена |
+| ip_address | varchar | NOT NULL | IP пользователя |
+| user_agent | varchar | NOT NULL | Устройство, система, ПО пользователя |
+| is_revoked | boolean | NOT NULL | Флаг отзыва токена |
+| expires_at | timestamptz | NOT NULL | Время истечения токена |
+| created_at | timestamptz | NOT NULL | Время создания записи |
+| updated_at | timestamptz | NOT NULL | Последнее время обновления |
+
+7. **ComicsRating** $-$ оценка комикса пользователем.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -115,7 +132,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 Уникальное ограничение: `(user_id, comics_id)` $-$ один пользователь может оценить коимкс только один раз.
 
-7. **Comment** $-$ комментарий к комиксу.
+8. **Comment** $-$ комментарий к комиксу.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -128,7 +145,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | created_at | timestamptz | NOT NULL | Дата создания записи |
 | updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-8. **CommentVoting** $-$ оценка комментария пользователем.
+9. **CommentVoting** $-$ оценка комментария пользователем.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -139,7 +156,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 Уникальное ограничение: `(user_id, comment_id)` $-$ один пользователь может оценить комментарий только один раз.
 
-9. **ReadingHistory** $-$ история чтения.
+10. **ReadingHistory** $-$ история чтения.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -153,18 +170,18 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 Уникальное ограничение: `(user_id, comics_id)` $-$ одна запись прогресса на пару пользователь-комикс.
 
-10. **Library** $-$ библиотека пользователя.
+11. **Library** $-$ библиотека пользователя.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | user_id | int | FK $\rightarrow$ User.id, NOT NULL | Пользователь |
-| title | varchar | NOT NULL, UNIQUE | Пользовательское название своей библиотеки |
-| comics_count | int | NOT NULL | Количество добавленных комиксов |
+| comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Комикс |
+| status | enum (reading, completed, plan_to_read, dropped, favorite) | NOT NULL | Статус комикса, установленный пользователем |
 | created_at | timestamptz | NOT NULL | Дата создания записи |
 | updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-1.   **Genre** $-$ жанр.
+12.   **Genre** $-$ жанр.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -174,7 +191,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | created_at | timestamptz | NOT NULL | Дата создания записи |
 | updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-12.  **Tag** $-$ тег.
+13.  **Tag** $-$ тег.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -184,18 +201,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | created_at | timestamptz | NOT NULL | Дата создания записи |
 | updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-13. **LibraryComics** $-$ связующая таблица Library и Comics как многие ко многим.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| id | int | PK | Идентификатор |
-| library_id | int | FK $\rightarrow$ Library.id | Бибилотека |
-| comics_id | int | FK $\rightarrow$ Comics.id | Комикс |
-| status | enum | NOT NULL | Статус (reading, completed, plan_to_read, dropped, favorite) |
-| created_at | timestamptz | NOT NULL | Дата создания записи |
-| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
-
-14. **ComicsGenre** $-$ связующая таблица Comics и Genre как многие ко многим.
+14.  **ComicsGenre** $-$ связующая таблица Comics и Genre как многие ко многим.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -228,20 +234,23 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | Volume $\rightarrow$ ReadingHistory | 1 : 1 | Том сохраняется в истории пользователя для конкретного комикса (только последний просмотренный том) |
 | Chapter $\rightarrow$ ReadingHistory | 1 : 1 | Глава сохраняется в истории пользователя для конкретного комикса (только последняя просмотренная глава) |
 | Page $\rightarrow$ ReadingHistory | 1 : 1 | Страница сохраняется в истории пользователя для конкретного комикса и его конкретной главы (только последняя просмотренная страница) |
+| User $\rightarrow$ Session | 1 : N | У пользователя может быть несколько активных сессий |
 | User $\rightarrow$ ComicsRating | 1 : N | Пользователь может поставить много оценок (по одной на комикс) |
 | User $\rightarrow$ CommentVoting | 1 : N | Пользователь может оценить много комментариев (но только один раз каждый) |
 | User $\rightarrow$ Comment | 1 : N | Пользователь может оставить много комментариев (несколько комментариев на один комикс в том числе) |
-| User $\rightarrow$ Library | 1 : N | У пользователя может быть несколько библиотек |
-| Library $\rightarrow$ Comics | M : N | Бибилотеки могут иметь несколько комиксов |
+| User $\leftrightarrow$ Comics | M : N | Пользователи могут добавлять разные комиксы в в свои библиотеки |
 
 ### 3.4. API: группы эндпоинтов
 
 #### 3.4.1. Аутентификация
 
-| Метод | Путь | Описание |
-|-------|------|----------|
-| POST | `/api/auth/register` | Регистрация нового пользователя (username, email, password), возвращает JWT |
-| POST | `/api/auth/login` | Авторизация по username + password, возвращает JWT | 
+| Метод | Путь | Описание | Доступ |
+|-------|------|----------|--------|
+| POST | `/api/auth/register` | Регистрация нового пользователя (username, email, password), возвращает JWT | Все |
+| POST | `/api/auth/login` | Авторизация по username + password | Все |
+| POST | `/api/auth/refresh` | Обновление access и refresh токенов | user, admin |
+| POST | `/api/auth/logout` | Аннулирование сессии: удаление access и refresh токенов | user, admin |
+| DELETE | `/api/auth/unregister` | Удаление аккаунта пользователя | user, admin |
 
 #### 3.4.2. Комиксы
 
@@ -360,12 +369,12 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| POST | `/api/libraries/{libraryId}/comics` | Добавить комикс в библиотеку | User |
-| GET | `/api/libraries/{libraryId}/comics` | Список комиксов в библиотеке с фильтрацией | User |
-| PUT | `/api/libraries/{libraryId}/comics/{id}` | Изменить статус комикса в библиотеке | User |
-| DELETE | `/api/libraries/{libraryId}/comics{id}` | Удалить комикс из библиотеки | User |
+| POST | `/api/libraries` | Добавить комикс в библиотеку | User |
+| GET | `/api/libraries` | Список комиксов в библиотеке с фильтрацией | User |
+| PUT | `/api/libraries/{libraryId}` | Изменить статус комикса в библиотеке | User |
+| DELETE | `/api/libraries/{libraryId}` | Удалить комикс из библиотеки | User |
 
-**Query-параметры `GET /api/libraries/{libraryId}/comics`:**
+**Query-параметры `GET /api/libraries`:**
 
 | Параметр | Тип | Описание |
 |----------|-----|----------|
@@ -379,9 +388,11 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| POST | `/api/reading-history/{comicsId}` | Создать прогресс чтения по комиксу | Все |
-| GET | `/api/reading-history/{comicsId}` | Получить прогресс по комиксу | Все |
-| PUT | `/api/reading-history/{comicsId}` | Обновить прогресс чтения | Все |
+| POST | `/api/reading-history` | Создать прогресс чтения по комиксу | Все |
+| GET | `/api/reading-history` | Список прогрессов чтения по комиксам | Все |
+| GET | `/api/reading-history/{id}` | Получить прогресс чтения по комиксу | Все |
+| PUT | `/api/reading-history/{id}` | Обновить прогресс чтения | Все |
+| DELETE | `/api/reading-history/{id}` | Удалить прогресс чтения | Все |
 
 #### 3.4.12. Жанры
 
@@ -399,12 +410,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | POST | `/api/tags` | Создание тега | admin |
 | DELETE | `/api/tags/{id}` | Удаление тега | admin |
 
-#### 3.4.14. Изображения
-
-| Метод | Путь | Описание | Доступ |
-|-------|------|----------|--------|
-
-#### 3.4.15. Системные
+#### 3.4.14. Системные
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
@@ -436,23 +442,25 @@ Frontend реализуется как единое SPA на React с испол
 1. При первом запуске приложения (как в Telegram Mini App, так и в браузере) пользователю отображается форма регистрации.
 2. Пользователь заполняет поля: `username`, `email`, `password`.
 3. Frontend отправляет данные на Backend (`POST /api/auth/register`).
-4. Backend валидирует данные (уникальность username и email, сложность пароля), хеширует пароль (bcrypt/argon2), создаёт запись в таблице User и возвращает JWT-токен.
+4. Backend валидирует данные (уникальность username и email, сложность пароля), хеширует пароль (bcrypt/argon2), создаёт запись в таблице User и возвращает JWT-токен (**access** - кратковременный для предоставления прав доступа Backend'у, храниться открыто) и еще один JWT-токен (**refresh** - долговременный для обновления кратковременного, должен быть защищен и скрыт на стороне клиента, он будет использоваться в момент когда кратковременный токен истек, данный токен должен хранить в постоянной куке). При этом в самом Backend'е храниться хешированная копия **refresh** токена для проверки с переданным пользователю в Session. У пользователя может быть несколько активных одновременных сессий, например, пользователь с зашел на сервис на одном и том же аккаунте, но с разных устройств или разных браузеров. Backend это учитывает через **user-agent**. Для предотвращения попыток взлома предусмотрена проверка IP пользователя.
 
 **Авторизация:**
 
-1. При повторном входе (если JWT истёк) пользователю отображается форма авторизации.
+1. При повторном входе (если **refresh** токен истек) пользователю отображается форма авторизации.
 2. Пользователь вводит `username` и `password`.
 3. Frontend отправляет данные на Backend (`POST /api/auth/login`).
-4. Backend находит пользователя по username, сверяет хеш пароля. При совпадении возвращает JWT-токен.
+4. Backend находит пользователя. При успешной валидации обновляет **refresh** токен и возвращает два новых: **access** и **refresh**.
 
-**Использование токена:**
+Если **refresh** токен не истек, то шаги с вводом аутентификационных данных пропускается.
+
+**Использование токена access:**
 
 1. Frontend сохраняет JWT и передаёт его в заголовке `Authorization: Bearer <token>` при каждом запросе.
 2. Backend проверяет JWT и определяет роль пользователя для авторизации доступа к эндпоинтам.
 
 ### 3.8. Хранение и доставка изображений
 
-Изображения страниц манги и обложки хранятся в S3-совместимом объектном хранилище (MinIO). В базе данных хранятся только url на файлы.
+Изображения аватара, страниц комиксов и обложки хранятся в S3-совместимом объектном хранилище (MinIO). В базе данных хранятся только url на файлы.
 
 ### 3.9. Развёртывание
 
@@ -460,6 +468,5 @@ Frontend реализуется как единое SPA на React с испол
 
 Для продуктивного окружения предполагается использование:
 
-- Reverse proxy (Nginx)
-- Managed PostgreSQL.
-- Managed S3 для изображений.
+- PostgreSQL.
+- S3 для изображений.
