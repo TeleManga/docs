@@ -12,5 +12,6 @@ edit = "edit/main/docs/"
 [project.navigation]
 items = [
   { title = "Главная", page = "index.md" },
+  { title = "Контакты", page = "team-info.md" },
   { title = "Changelog", page = "changelog.md" }
 ]
