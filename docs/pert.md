@@ -2,4 +2,4 @@
 
 На рисунке ниже приведена PERT-диаграмма проекта с анализом критического пути.
 
-![PERT](./img/pert.drawio.pdf)
+![PERT](./img/pert.drawio.svg)
