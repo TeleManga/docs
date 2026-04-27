@@ -48,7 +48,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | image_url | varchar | NOT NULL | URL обложки |
 | author | varchar | NOT NULL | Автор |
 | country | varchar | NOT NULL | Страна |
-| volumes_count | int | NOT NULL | Количество томов |
+| chapter_count | int | NOT NULL | количество глав комикса |
 | status | enum | NOT NULL | Статус публикации (ongoing, announced, completed, dropped, paused) |
 | kind | enum | NOT NULL | Тип (manga, manhwa, manhua) |
 | release_date | timestamptz | NOT NULL | Дата выхода |
@@ -57,42 +57,26 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | created_at | timestamptz | NOT NULL | Дата создания записи |
 | updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-2. **Volume** $-$ том комикса.
+2. **Chapter** $-$ глава тома.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Привязка к комиксу |
-| title | varchar | NOT NULL | Название тома |
-| volume_nomer | int | NOT NULL | Номер тома |
-| chapters_count | int | NOT NULL | Количество глав в томе |
-| created_at | timestamptz | NOT NULL | Дата создания записи |
-| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
-
-3. **Chapter** $-$ глава тома.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| id | int | PK | Идентификатор |
-| volume_id | int | FK $\rightarrow$ Volume.id, NOT NULL | Привязка к тому |
 | title | varchar | NOT NULL | Название главы |
-| chapter_nomer | int | NOT NULL | Номер главы |
+| chapter_number | int | NOT NULL | Номер главы |
 | pages_count | int | NOT NULL | Количество страниц в главе |
-| created_at | timestamptz | NOT NULL | Дата создания записи |
-| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-4. **Page** $-$ страница главы.
+3. **Page** $-$ страница главы.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | chapter_id | int | FK $\rightarrow$ Chapter.id, NOT NULL | Привязка к главе |
-| page_nomer | int | NOT NULL | Номер страницы |
+| page_number | int | NOT NULL | Номер страницы |
 | image_url | varchar | NOT NULL | URL на контент страницы |
-| created_at | timestamptz | NOT NULL | Дата создания записи |
-| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-5. **User** $-$ пользователь системы.
+4. **User** $-$ пользователь системы.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -104,24 +88,10 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | role | enum | NOT NULL, DEFAULT 'user' | Роль (user, admin) |
 | library_comics_count | int | NOT NULL, DEFAULT 0 | Количество комиксов добавленных в библиотеку пользователя |
 | history_comics_count | int | NOT NULL, DEFAULT 0 | Количество комиксов отслеживаемых в истории чтения пользователя |
-| created_at | timestamptz | NOT NULL | Дата регистрации |
-| updated_at | timestamptz | NOT NULL | Дата обновления |
+| refresh_token_hash | varchar | NOT NULL | Хеш refresh токена |
+| expires_at | timestamptz | NOT NULL | Время истечения реентабельности хеша |
 
-6. **Session** $-$ Сессия пользователя.
-
-| Поле | Тип | Ограничения | Описание |
-|------|-----|-------------|----------|
-| id | int | PK | Идентификатор |
-| user_id | int | FK $\rightarrow$ User.id, NOT NULL | Пользователь |
-| token_hash | varchar | NOT NULL | Хеш refresh токена |
-| ip_address | varchar | NOT NULL | IP пользователя |
-| user_agent | varchar | NOT NULL | Устройство, система, ПО пользователя |
-| is_revoked | boolean | NOT NULL | Флаг отзыва токена |
-| expires_at | timestamptz | NOT NULL | Время истечения токена |
-| created_at | timestamptz | NOT NULL | Время создания записи |
-| updated_at | timestamptz | NOT NULL | Последнее время обновления |
-
-7. **ComicsRating** $-$ оценка комикса пользователем.
+5. **ComicsRating** $-$ оценка комикса пользователем.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -132,20 +102,19 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 Уникальное ограничение: `(user_id, comics_id)` $-$ один пользователь может оценить коимкс только один раз.
 
-8. **Comment** $-$ комментарий к комиксу.
+6. **Comment** $-$ комментарий к комиксу.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | user_id | int | FK $\rightarrow$ User.id, NOT NULL | Автор комментария |
 | comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | К какому комиску |
+| content | text | NOT NULL | Текст комментария |
 | like_count | int | NOT NULL, DEFAULT 0 | Суммарное количество лайков |
 | dislike_count | int | NOT NULL, DEFAULT 0 | Суммарное количество дизлайков |
-| content | text | NOT NULL | Текст комментария |
 | created_at | timestamptz | NOT NULL | Дата создания записи |
-| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-9. **CommentVoting** $-$ оценка комментария пользователем.
+7. **CommentVoting** $-$ оценка комментария пользователем.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -156,7 +125,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 Уникальное ограничение: `(user_id, comment_id)` $-$ один пользователь может оценить комментарий только один раз.
 
-10. **ReadingHistory** $-$ история чтения.
+8. **ReadingHistory** $-$ история чтения.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -166,11 +135,10 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | chapter_id | int | FK $\rightarrow$ Chapter.id, NOT NULL | Последняя глава |
 | page_id | int | FK $\rightarrow$ Page.id | Последняя страница |
 | created_at | timestamptz | NOT NULL | Дата создания записи |
-| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
 Уникальное ограничение: `(user_id, comics_id)` $-$ одна запись прогресса на пару пользователь-комикс.
 
-11. **Library** $-$ библиотека пользователя.
+9. **Library** $-$ библиотека пользователя.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -178,30 +146,24 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | user_id | int | FK $\rightarrow$ User.id, NOT NULL | Пользователь |
 | comics_id | int | FK $\rightarrow$ Comics.id, NOT NULL | Комикс |
 | status | enum (reading, completed, plan_to_read, dropped, favorite) | NOT NULL | Статус комикса, установленный пользователем |
-| created_at | timestamptz | NOT NULL | Дата создания записи |
-| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-12.   **Genre** $-$ жанр.
+10.   **Genre** $-$ жанр.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | name | varchar | UNIQUE, NOT NULL | Название жанра |
 | description | text | NOT NULL | Описание жанра |
-| created_at | timestamptz | NOT NULL | Дата создания записи |
-| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-13.  **Tag** $-$ тег.
+11.  **Tag** $-$ тег.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
 | id | int | PK | Идентификатор |
 | name | varchar | UNIQUE, NOT NULL | Название тега |
 | description | text | NOT NULL | Описание тега |
-| created_at | timestamptz | NOT NULL | Дата создания записи |
-| updated_at | timestamptz | NOT NULL | Дата последнего обновления |
 
-14.  **ComicsGenre** $-$ связующая таблица Comics и Genre как многие ко многим.
+12.  **ComicsGenre** $-$ связующая таблица Comics и Genre как многие ко многим.
 
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -209,7 +171,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | comics_id | int | FK $\rightarrow$ Comics.id | Комикс |
 | genre_id | int | FK $\rightarrow$ Genre.id | Жанр |
 
-15. **ComicsTag** $-$ связующая таблица Comics и Tag как многие ко многим.
+13. **ComicsTag** $-$ связующая таблица Comics и Tag как многие ко многим.
     
 | Поле | Тип | Ограничения | Описание |
 |------|-----|-------------|----------|
@@ -222,19 +184,16 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 
 | Связь | Тип | Описание |
 |-------|-----|----------|
-| Comics $\rightarrow$ Volume | 1 : N | У комикса может быть много томов |
+| Comics $\rightarrow$ Chapter | 1 : N | У комикса может быть много глав |
 | Comics $\rightarrow$ Rating | 1 : N | У комикса может быть много оценок |
 | Comics $\rightarrow$ Comment | 1 : N | У комикса может быть много комментариев |
 | Comics $\leftrightarrow$ Genre | M : N | Комиксы могут иметь несколько жанров, но как минимум 1 |
 | Comics $\leftrightarrow$ Tag | M : N | Комиксы могут иметь несколько тегов, но как минимум 1 |
-| Comics $\rightarrow$ UserLibrary | 1 : N | Комикс может быть в библиотеках многих пользователей |
-| Volume $\rightarrow$ Chapter | 1 : N | У тома может быть много глав |
+| Comics $\rightarrow$ Library | 1 : N | Комикс может быть в библиотеках многих пользователей |
 | Chapter $\rightarrow$ Page | 1 : N | У главы может быть много страниц |
 | User $\rightarrow$ ReadingHistory | 1 : N | Пользователь может читать несколько комиксов одновременно |
-| Volume $\rightarrow$ ReadingHistory | 1 : 1 | Том сохраняется в истории пользователя для конкретного комикса (только последний просмотренный том) |
 | Chapter $\rightarrow$ ReadingHistory | 1 : 1 | Глава сохраняется в истории пользователя для конкретного комикса (только последняя просмотренная глава) |
 | Page $\rightarrow$ ReadingHistory | 1 : 1 | Страница сохраняется в истории пользователя для конкретного комикса и его конкретной главы (только последняя просмотренная страница) |
-| User $\rightarrow$ Session | 1 : N | У пользователя может быть несколько активных сессий |
 | User $\rightarrow$ ComicsRating | 1 : N | Пользователь может поставить много оценок (по одной на комикс) |
 | User $\rightarrow$ CommentVoting | 1 : N | Пользователь может оценить много комментариев (но только один раз каждый) |
 | User $\rightarrow$ Comment | 1 : N | Пользователь может оставить много комментариев (несколько комментариев на один комикс в том числе) |
@@ -277,26 +236,6 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | `sortBy` | string | Поле сортировки (по умолчанию `average_rating`) |
 | `sortOrder` | string | Направление сортировки: `asc`, `desc` (по умолчанию `desc`) |
 | `limit` | int | Лимит найденных комиксов |
-
-#### 3.4.3. Тома
-
-| Метод | Путь | Описание | Доступ |
-|-------|------|----------|--------|
-| GET | `/api/comics/{comicsId}/volumes` | Список томов комикса с фильтрами | Все |
-| POST | `/api/comics/{comicsId}/volumes` | Добавление тома | admin |
-| GET | `api/volumes/{id}` | Информация о томе | Все |
-| PUT | `api/volumes/{id}` | Обновление тома | admin |
-| DELETE | `/api/volumes/{id}` | Удаление тома | admin |
-
-**Query-параметры `GET /api/comics/{comicsId}/volumes`:**
-
-| Параметр | Тип | Описание |
-|----------|-----|----------|
-| `title` | string | Фильтр по названию тома |
-| `volume_nomer` | int | Фильтр по номеру тома |
-| `sortBy` | string | Поле сортировки (по умолчанию `volume_nomer`) |
-| `sortOrder` | string | Направление сортировки: `asc`, `desc` (по умолчанию `desc`) |
-| `limit` | int | Лимит найденных томов |
 
 #### 3.4.4. Главы
 
@@ -351,21 +290,7 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | PUT | `/api/comments/{commentId}/vote` | Изменить оценку комментария | Все |
 | DELETE | `/api/comments/{commentId}/vote` | Удалить свою оценку комментария | Все |
 
-#### 3.4.9. Библиотеки пользователя
-
-| Метод | Путь | Описание | Доступ |
-|-------|------|----------|--------|
-| POST | `/api/libraries` | Создать новую библиотеку | User |
-| GET | `/api/libraries` | Список библиотек | User |
-| GET | `/api/libraries/{id}` | Получить метаданные библиотеки | User |
-| PUT | `/api/libraries/{id}` | Изменить метаданные библиотеки | User |
-| DELETE | `/api/libraries/{id}` | Удалить библиотеку | User |
-
-Каждый из этих методов подразумевает обращение к персональным
-библиотекам пользователя, id которого определяется
-через JWT.
-
-#### 3.4.10. Сохраненные комиксы в библиотеке пользователя
+#### 3.4.9. Сохраненные комиксы в библиотеке пользователя
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
@@ -379,12 +304,15 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | Параметр | Тип | Описание |
 |----------|-----|----------|
 | `status` | string | Фильтр по статусу коммикса |
-| `created_at` | int | Фильтр по дате добавления комикса в библиотеку |
-| `sortBy` | string | Поле сортировки (по умолчанию `created_at`) |
+| `sortBy` | string | Поле сортировки (по умолчанию `status`) |
 | `sortOrder` | string | Направление сортировки: `asc`, `desc` (по умолчанию `desc`) |
 | `limit` | int | Лимит найденных комиксов |
 
-#### 3.4.11. История чтения
+Каждый из этих методов подразумевает обращение к персональной
+библиотеке пользователя, id которого определяется
+через JWT.
+
+#### 3.4.10. История чтения
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
@@ -394,23 +322,25 @@ ER-диаграмма расположена в `docs/assets/diagrams/ERD/ERD.dr
 | PUT | `/api/reading-history/{id}` | Обновить прогресс чтения | Все |
 | DELETE | `/api/reading-history/{id}` | Удалить прогресс чтения | Все |
 
-#### 3.4.12. Жанры
+#### 3.4.11. Жанры
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| GET | `/api/genres` | Список жанров | Все |
 | POST | `/api/genres` | Создание жанра | admin |
+| GET | `/api/genres` | Список жанров | Все |
+| PUT | `/api/genres/{id}` | Изменение жанра | admin |
 | DELETE | `/api/genres/{id}` | Удаление жанра | admin |
 
-#### 3.4.13. Теги
+#### 3.4.12. Теги
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
-| GET | `/api/tags` | Список тегов | Все |
 | POST | `/api/tags` | Создание тега | admin |
+| GET | `/api/tags` | Список тегов | Все |
+| PUT | `/api/tags/{id}` | Изменение тега | admin |
 | DELETE | `/api/tags/{id}` | Удаление тега | admin |
 
-#### 3.4.14. Системные
+#### 3.4.13. Системные
 
 | Метод | Путь | Описание | Доступ |
 |-------|------|----------|--------|
@@ -442,7 +372,7 @@ Frontend реализуется как единое SPA на React с испол
 1. При первом запуске приложения (как в Telegram Mini App, так и в браузере) пользователю отображается форма регистрации.
 2. Пользователь заполняет поля: `username`, `email`, `password`.
 3. Frontend отправляет данные на Backend (`POST /api/auth/register`).
-4. Backend валидирует данные (уникальность username и email, сложность пароля), хеширует пароль (bcrypt/argon2), создаёт запись в таблице User и возвращает JWT-токен (**access** - кратковременный для предоставления прав доступа Backend'у, храниться открыто) и еще один JWT-токен (**refresh** - долговременный для обновления кратковременного, должен быть защищен и скрыт на стороне клиента, он будет использоваться в момент когда кратковременный токен истек, данный токен должен хранить в постоянной куке). При этом в самом Backend'е храниться хешированная копия **refresh** токена для проверки с переданным пользователю в Session. У пользователя может быть несколько активных одновременных сессий, например, пользователь с зашел на сервис на одном и том же аккаунте, но с разных устройств или разных браузеров. Backend это учитывает через **user-agent**. Для предотвращения попыток взлома предусмотрена проверка IP пользователя.
+4. Backend валидирует данные (уникальность username и email, сложность пароля), хеширует пароль (bcrypt/argon2), создаёт запись в таблице User и возвращает JWT-токен (**access** - кратковременный для предоставления прав доступа Backend'у, храниться открыто) и еще один JWT-токен (**refresh** - долговременный для обновления кратковременного, должен быть защищен и скрыт на стороне клиента, он будет использоваться в момент, когда кратковременный токен истек, данный токен должен храниться в постоянной куке). При этом в самом Backend'е храниться хешированная копия **refresh** токена для проверки с переданным пользователю.
 
 **Авторизация:**
 
@@ -451,7 +381,7 @@ Frontend реализуется как единое SPA на React с испол
 3. Frontend отправляет данные на Backend (`POST /api/auth/login`).
 4. Backend находит пользователя. При успешной валидации обновляет **refresh** токен и возвращает два новых: **access** и **refresh**.
 
-Если **refresh** токен не истек, то шаги с вводом аутентификационных данных пропускается.
+Если **refresh** токен не истек, то шаги с вводом аутентификационных данных пропускаются.
 
 **Использование токена access:**
 
